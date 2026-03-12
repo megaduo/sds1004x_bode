@@ -58,7 +58,7 @@ Right now the program supports the following models:
 
   ```<awg_name>``` must be ```psg9080```,  ```<port>``` must be a serial port. See below.
 
-* **Siglent SDG1000 (SDG1010, SDG1020, SDG1050)**. This is a 2 channel AWG that is available in various bandwidths (10 to 50 MHz).
+* **Siglent SDG1000 (SDG1010, SDG1020, SDG1050)**. This is a 2 channel AWG that is available in various bandwidths (10 to 50 MHz). Although it is a Siglent AWG, it seems to have some communication problems with the newer Siglent scopes. This driver solves that.
 
   ```<awg_name>``` must be ```sdg1050```,  ```<port>``` must be a Visa compatible connection string, for USB. See below.
 * **Uni-Trend UTG1000X (like the UTG1022X)** This is a 2 channel 20 or 40MHz AWG. It connects to the PC via USB, and talks a dialect of the SCPI 1992.0 standard. There may be other devices that use this same dialect, so you may be able to use this driver for other AWGs, especially those from Uni-T.
@@ -212,7 +212,7 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 
 ### 2026-03-12
 
-* added Siglent SDG1000 (SDG1010, SDG1020, SDG1050) driver: the older SDG1000 (non-X) series from Siglent, as they have some compatibility issues with the newer SDS scopes.
+* added Siglent SDG1000 (SDG1010, SDG1020, SDG1050) driver: the older SDG1000 (non-X) series from Siglent, as they have some compatibility issues with the newer Siglent scopes.
 * alphabetically sorted the AWG list. The list is getting long.
 
 ### 2025-08-11
