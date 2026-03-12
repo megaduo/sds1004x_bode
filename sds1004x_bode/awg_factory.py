@@ -18,6 +18,7 @@ from awgdrivers.dg800 import RigolDG800
 from awgdrivers.dg800P import RigolDG800P
 from awgdrivers.utg1000x import UTG1000x
 from awgdrivers.utg900e import UTG900e
+from awgdrivers.sdg1050 import SDG1050
 
 
 class AwgFactory(object):
@@ -32,9 +33,13 @@ class AwgFactory(object):
         return self.awgs[short_name]
 
     def get_names(self):
+        # get the names of the AWGs, sorted alphabetically, but with "dummy" first
         out = []
         for a in self.awgs:
-            out.append(a)
+            if a != "dummy":
+                out.append(a)
+        out = sorted(out)
+        out.insert(0, "dummy")
         return out
 
 
@@ -52,6 +57,7 @@ drivers = (
     RigolDG800,
     RigolDG800P,
     UTG1000x,
+    SDG1050,
     UTG900e
 )
 for driver in drivers:

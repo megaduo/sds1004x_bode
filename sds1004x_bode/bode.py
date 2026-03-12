@@ -12,6 +12,7 @@ DEFAULT_AWG = "dummy"
 DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUD_RATE = 19200
 
+
 def main():
     parser = argparse.ArgumentParser(description="Siglent SDS 800X-HD/1000X-E to non-Siglent AWG bode plot bridge.")
     parser.add_argument("awg", type=str.lower, nargs='?', default=DEFAULT_AWG, choices=awg_factory.get_names(), help=f"The AWG to use. (default: {DEFAULT_AWG})")
