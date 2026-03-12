@@ -293,6 +293,8 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 
 * **nmeurer** - driver for JunTek/JOY-IT PSG9080 AWG.
 
+* **gtroc71** (and Deepseek) - driver for Siglent SDG1000 series.
+
 ## Links
 
 1. [Siglent SDS1104X-E and SDS1204X-E: Bode plot with non-Siglent AWG](http://www.eevblog.com/forum/testgear/siglent-sds1104x-e-and-sds1204x-e-bode-plot-with-non-siglent-awg/) on EEVblog Forum.
