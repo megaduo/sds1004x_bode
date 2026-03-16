@@ -50,6 +50,10 @@ Right now the program supports the following models:
 
   ```<awg_name>``` must be ```fy6900```,  ```<port>``` must be a serial port. See below.
 
+* **HP 8116A** This is a single channel 1 mHz-50 MHz Pulse/Function Generator. This driver might also work for other AWGs of the same age from HP. It uses a HP-IB (GPIB) interface, and is to be connected to the PC via a GPIB adapter (PCIe/USB/Serial/Ethernet/...).
+
+  ```<awg_name>``` must be ```hp8116a```,  ```<port>``` must either be valid VISA connection string, or a instrument address of 1 to 30, in which case the VISA string will be ```GPIB0::{port}::INSTR```. See below.
+
 * **RD/JOY-IT JDS6600** This is a 2 channel AWG that is available in various bandwidths (15 to 60 MHz). It connects to the PC via USB. This driver may also work on others from the same series, like the JDS2900.
 
   ```<awg_name>``` must be ```jds6600```,  ```<port>``` must be a serial port. See below.
@@ -112,7 +116,7 @@ python3 bode.py <awg_name> [<port>] [<baud_rate>] [-h] [-v[v[v]]] [-1]
 
 where
 
-* ```<awg_name>``` is the name of the AWG connected to your PC: ```ad9910```, ```bk4075```, ```dg800```, ```dg800p```,  ```fy```, ```fy6900```, ```fy6600```, ```psg9080```, ```jds6600```, ```sdg1050```, ```utg900e```, ```utg1000x``` or ```dummy```.
+* ```<awg_name>``` is the name of the AWG connected to your PC: ```ad9910```, ```bk4075```, ```dg800```, ```dg800p```,  ```fy```, ```fy6900```, ```fy6600```, ```hp8116a```, ```psg9080```, ```jds6600```, ```sdg1050```, ```utg900e```, ```utg1000x``` or ```dummy```.
   
   If you do not specify ```<awg_name>```, the program will use the ```dummy``` configuration: this can be used to test communication with the oscilloscope. The program will then emulate a Siglent AWG and the oscilloscope will generate a Bode plot but no commands will be sent to any AWG.
 
@@ -120,7 +124,7 @@ where
 
   For serial port AWGs, it will be something like ```/dev/ttyUSB0``` or ```/dev/ttyACM0```.
 
-  If you use one of the SCPI compatible devices like the ```dg800```, ```dg800p```, ```sdg1050```, ```utg900e```, or ```utg1000x```, you must specify a Visa compatible connection string, like ```TCPIP::192.168.001.204::INSTR``` or ```USB0::9893::6453::DG1234567890A::0::INSTR```.
+  If you use one of the SCPI compatible devices like the ```dg800```, ```dg800p```, ```sdg1050```, ```utg900e```, or ```utg1000x```, you must specify a Visa compatible connection string, like ```TCPIP::192.168.001.204::INSTR``` or ```USB0::9893::6453::DG1234567890A::0::INSTR```. The ```hp8116a``` driver will also accept an instrument address (1 to 30), in which case it will look for the instrument under ```GPIB0::{port}::INSTR```.
 
   If you use the ```dummy``` generator, you don't have to specify the port.
 
@@ -210,6 +214,10 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 
 ## Changelog
 
+### 2026-03-16
+
+* added HP 8116A AWG
+  
 ### 2026-03-12
 
 * added Siglent SDG1000 (SDG1010, SDG1020, SDG1050) driver: the older SDG1000 (non-X) series from Siglent, as they have some compatibility issues with the newer Siglent scopes.
@@ -294,6 +302,8 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 * **nmeurer** - driver for JunTek/JOY-IT PSG9080 AWG.
 
 * **gtroc71** (and Deepseek) - driver for Siglent SDG1000 series.
+
+* **giuliano-sabbatini** - driver for HP8116A
 
 ## Links
 
