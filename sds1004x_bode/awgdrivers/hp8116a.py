@@ -16,7 +16,7 @@ from .exceptions import UnknownChannelError
 
 # GPIB interface settings
 TIMEOUT = 5000  # milliseconds
-DEFAULT_GPIB_ADDRESS = 16  # Default GPIB address for HP8116A
+# DEFAULT_GPIB_ADDRESS = 16  # Default GPIB address for HP8116A
 
 # Wave type mapping: our constants -> HP8116A commands
 WAVE_TYPE_MAP = {
@@ -47,9 +47,11 @@ class HP8116A(BaseAWG):
                  baud_rate: int = 0, timeout: int = TIMEOUT, log_debug: bool = False):
         """
         Initialize HP8116A driver.
-        
         Args:
-            port: either an instrument address, or a VISA string
+            port: either an instrument address, or a VISA string.
+            it is defaulted by the variable 
+                DEFAULT_PORT = "xx" 
+            in the bode.py file. 
             baud_rate: Ignored (kept for compatibility with other drivers)
             timeout: GPIB timeout in milliseconds
             log_debug: Enable debug logging
@@ -67,13 +69,28 @@ class HP8116A(BaseAWG):
         self.load_impedance = 50.0
         
     def _get_gpib_address_string(self) -> str:
-        """Generate GPIB address string for pyvisa."""
-        if len(self.port) == 0:
-            return f"GPIB0::{DEFAULT_GPIB_ADDRESS}::INSTR"
-        if isinstance(self.port, int) or self.port.isdigit():
-            return f"GPIB0::{self.port}::INSTR"
+        """
+        Generate GPIB address string for pyvisa.        
+        Accepts port in two formats:
+        - Integer (1-30) or numeric string ("1"-"30"): converts to GPIB0::N::INSTR
+        - Full VISA string (e.g., "GPIB0::16::INSTR"): returns as-is after validation
+        Returns:
+            str: Valid VISA resource string for pyvisa
+        Raises:
+            ValueError: If port value is invalid
+            TypeError: If port is not int or str
+        """
+        # Handle integer port number
+        if self.port.isdigit():                         # is it an integer?
+            if 1 <= int(self.port) <= 30:               # is it between 1 and 30?   
+                return f"GPIB0::{self.port}::INSTR"     # format connection string
+            else:
+                raise ValueError(f"GPIB address must be between 1-30, got {self.port}")    
+        # Check if it's already a VISA resource string
+        elif "::" in self.port:  # does it look like a VISA string?
+            return self.port  # if so, return as-is 
         else:
-            return self.port  # Assume it's already a valid VISA resource string
+            raise TypeError(f"Invalid port format: '{self.port}'. Expected number (1-30) or VISA string (like GPIB0::N::INSTR or TCPIP::ip_address::gpib,N::INSTR). You can also adapt the DEFAULT_PORT in bode.py")
 
     def _connect(self):
         """Establish GPIB connection to the instrument."""
@@ -83,14 +100,14 @@ class HP8116A(BaseAWG):
         try:
             self.resource_manager = pyvisa.ResourceManager()
             gpib_addr = self._get_gpib_address_string()
-            self.printdebug(f"Connecting to {gpib_addr}")
+            self.printdebug(f"Connecting to '{gpib_addr}'")
             
             self.instrument = self.resource_manager.open_resource(gpib_addr)
             self.instrument.timeout = self.timeout
             self.instrument.read_termination = '\n'
             self.instrument.write_termination = '\n'
             
-            self.printdebug(f"Connected to {gpib_addr}")
+            self.printdebug(f"Connected to '{gpib_addr}' successfully")
         except Exception as e:
             self.printdebug(f"Connection failed: {e}")
             raise
