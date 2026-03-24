@@ -391,11 +391,12 @@ class AwgServer(CommsObject):
 
     def __init__(self, awg, host: str = None, rpcbind_port: int = None, 
                  vxi11_portrange_start: int = None, vxi11_portrange_end: int = None, 
-                 log_VXI: bool = False, log_mapping: bool = False, runonce: bool = False):
+                 log_VXI: bool = False, log_mapping: bool = False, runonce: bool = False, change_ports: bool = False):
         if host is not None:
             self.host = host
         else:
             self.host = HOST
+        self.change_ports = change_ports
 
         if not isinstance(rpcbind_port, (int, type(None))):
             raise TypeError("rpcbind_port must be an integer.")
@@ -411,12 +412,23 @@ class AwgServer(CommsObject):
         else:
             self.vxi11_portrange_start = VXI11_PORTRANGE_START
 
-        if not isinstance(vxi11_portrange_end, (int, type(None))):
-            raise TypeError("vxi11_port range start must be an integer.")
-        if vxi11_portrange_end is not None:
-            self.vxi11_portrange_end = vxi11_portrange_end
+        if self.change_ports:
+            if not isinstance(vxi11_portrange_end, (int, type(None))):
+                raise TypeError("vxi11_port range end must be an integer.")
+            if vxi11_portrange_end is not None:
+                self.vxi11_portrange_end = vxi11_portrange_end
+            else:
+                self.vxi11_portrange_end = VXI11_PORTRANGE_END
+            if self.vxi11_portrange_end < self.vxi11_portrange_start:
+                # swap the values
+                v = self.vxi11_portrange_start
+                self.vxi11_portrange_start = self.vxi11_portrange_end
+                self.vxi11_portrange_end = v
+            if self.vxi11_portrange_start == self.vxi11_portrange_end:
+                # if the range is only one port, we can disable the change ports mode
+                self.change_ports = False
         else:
-            self.vxi11_portrange_end = VXI11_PORTRANGE_END
+            self.vxi11_portrange_end = self.vxi11_portrange_start
 
         self.vxi11_port = multiprocessing.Value('I', self.vxi11_portrange_start)
             
@@ -445,7 +457,10 @@ class AwgServer(CommsObject):
         self.pm2.start()
         # Create VXI-11 socket
         if self.log_mapping:
-            print(f"{self.myname}: Listening to TCP port {self.host}:{self.vxi11_port.value}")
+            if self.change_ports:
+                print(f"{self.myname}: Listening to TCP port range {self.host}:{self.vxi11_portrange_start}-{self.vxi11_portrange_end}")
+            else:
+                print(f"{self.myname}: Listening to TCP port {self.host}:{self.vxi11_port.value}")
         self.lxi_socket = self.create_socket(self.host, self.vxi11_port.value, False, self.myname)
 
         # Initialize SCPI command parser
@@ -474,21 +489,31 @@ class AwgServer(CommsObject):
                     print(f"{self.myname}: Session started.")
                 session_started = True
             
-            # every request must go to a new socket (as SDS800X-HD requires)
-            self.close_lxi_sockets()
-            if session_result == sessionType.SESSION_ERROR:
-                # If there was an error, we can stop the server
-                if self.log_mapping:
-                    print(f"{self.myname}: Session ended with an error. Stopping server.")
-                break
-            
-            self.vxi11_port.value += 1
-            if self.vxi11_port.value > self.vxi11_portrange_end:
-                self.vxi11_port.value = self.vxi11_portrange_start
+            if self.change_ports:
+                # every request must go to a new socket (as older firmware from SDS800X-HD requires)
+                # TODO: there should be a lock on this entire section, to prevent the portmapper to fetch a bad socket number
+                # But the latest firmware no longer needs this, so I'll leave it as is for now, and maybe add it later if needed
+                self.close_lxi_sockets()
+                if session_result == sessionType.SESSION_ERROR:
+                    # If there was an error, we can stop the server
+                    if self.log_mapping:
+                        print(f"{self.myname}: Session ended with an error. Stopping server.")
+                    break
                 
-            if self.log_mapping:
-                print(f"{self.myname}: moving to TCP port {self.vxi11_port.value}")
-            self.lxi_socket = self.create_socket(self.host, self.vxi11_port.value, False, self.myname)
+                self.vxi11_port.value += 1
+                if self.vxi11_port.value > self.vxi11_portrange_end:
+                    self.vxi11_port.value = self.vxi11_portrange_start
+                    
+                if self.log_mapping:
+                    print(f"{self.myname}: moving to TCP port {self.vxi11_port.value}")
+                self.lxi_socket = self.create_socket(self.host, self.vxi11_port.value, False, self.myname)
+            else:  
+                # no need to change ports, but must still check for errors
+                if session_result == sessionType.SESSION_ERROR:
+                    # If there was an error, we can stop the server
+                    if self.log_mapping:
+                        print(f"{self.myname}: Session ended with an error. Stopping server.")
+                    break
 
             if self.runonce and session_result in (sessionType.SESSION_ENDED, sessionType.SESSION_TIMEOUT):
                 # If we run only once, and the session is ended, we can stop the server

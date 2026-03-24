@@ -19,7 +19,8 @@ def main():
     parser.add_argument("port", type=str, nargs='?', default=DEFAULT_PORT, help=f"The port to use. Either a serial port, or a Visa compatible connection string. (default: {DEFAULT_PORT})")
     parser.add_argument("baudrate", type=int, nargs='?', default=DEFAULT_BAUD_RATE, help=f"When using serial, baud rate to use. (default: {DEFAULT_BAUD_RATE})")
     parser.add_argument('-v', default=0, help="Verbosity level. Specify one or more 'v' for more detail in the logs.", action="count", dest="verbosity")
-    parser.add_argument('-1', default=0, help="Run only once: exit after one bode plot is done. If not specified: use Ctrl-C to stop the program.", dest="runonce", action="store_true", required=False)
+    parser.add_argument('-1', default=False, help="Run only once: exit after one bode plot is done. If not specified: use Ctrl-C to stop the program.", dest="runonce", action="store_true", required=False)
+    parser.add_argument('-old', default=False, help="If you have old firmware on the scope, you must set this. It forces changing of the VXI-11 ports at every request.", dest="old_firmware", action="store_true", required=False)
     args = parser.parse_args()
 
     # Extract AWG name from parameters
@@ -30,7 +31,8 @@ def main():
     awg_baud_rate = args.baudrate
     # and whether to run only once
     runonce = args.runonce
-    
+    # and whether to use old firmware mode
+    change_ports = args.old_firmware
     # Using the logging module in multiprocessing makes the code more complicated to read.
     # So I keep it simple
     log_commands = False
@@ -61,7 +63,7 @@ def main():
     # Run AWG server
     server = None
     try:
-        server = AwgServer(awg, log_VXI=log_VXI, log_mapping=log_mapping, runonce=runonce)
+        server = AwgServer(awg, log_VXI=log_VXI, log_mapping=log_mapping, runonce=runonce, change_ports=change_ports)
         server.start()
 
     except KeyboardInterrupt:

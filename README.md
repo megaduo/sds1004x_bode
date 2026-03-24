@@ -134,6 +134,8 @@ where
 
 * Use ```-1``` to exit the program after one bode plot is done. It looks for the "OUTP OFF" command or inactivity for more than 10 seconds after a start of a bode plot. If ```-1``` is not specified, the program will run until Ctrl-C is used.
 
+* Use ```-old``` if you have an old firmware on the scope. Older firmware required continuous changing of the VXI-11 ports. The newer firmware does not require this.
+
 * Use ```-v``` or ```-vv``` or ```-vvv``` for logging verbosity. The first logs the driver info, the next also logs VXI-11 info, the last also logs port mapper info. By default, only the startup phase and the incoming commands are logged.
 
 If the program starts successfully, and with ```-vvv```, you'll see the following output:
@@ -213,6 +215,10 @@ For driver testing, you can use [```awg_tests.py```](/sds1004x_bode/tests/awg_te
 This is possible, but you should set a large timeout on your ```Instrument``` or when using ```open_resource()``` when using serial AWGs. See the example in [```testSCPI.py```](/sds1004x_bode/tests/testSCPI.py)
 
 ## Changelog
+
+### 2026-03-24
+
+* By default disabling the port changing that was required for older scope firmware. Use `-old` to re-enable it.
 
 ### 2026-03-16
 
