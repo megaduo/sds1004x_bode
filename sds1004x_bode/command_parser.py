@@ -37,19 +37,22 @@ class CommandParser(object):
         if line.endswith("?"):
             return
 
-        channel = int(line[1])
+        try:
+            channel = int(line[1])
 
-        commands = line[3:].split(';')
+            commands = line[3:].split(';')
 
-        for command in commands:
-            token = command[0:4]
-            args = command[5:].split(',')
+            for command in commands:
+                token = command[0:4]
+                args = command[5:].split(',')
 
-            if token == "BSWV":
-                self.parse_bswv(args, channel)
+                if token == "BSWV":
+                    self.parse_bswv(args, channel)
 
-            elif token == "OUTP":
-                self.parse_outp(args, channel)
+                elif token == "OUTP":
+                    self.parse_outp(args, channel)
+        except Exception as e:
+            print(f"Error parsing command \"{line}\": \"{e}\". Ignoring command.")
 
     def parse_bswv(self, args, channel):
         """
