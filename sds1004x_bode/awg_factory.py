@@ -20,6 +20,7 @@ from awgdrivers.utg1000x import UTG1000x
 from awgdrivers.utg900e import UTG900e
 from awgdrivers.sdg1050 import SDG1050
 from awgdrivers.hp8116a import HP8116A
+from awgdrivers.ag33500b import AG33500B
 
 
 class AwgFactory(object):
@@ -60,7 +61,8 @@ drivers = (
     UTG1000x,
     SDG1050,
     UTG900e,
-    HP8116A
+    HP8116A,
+    AG33500B
 )
 for driver in drivers:
     awg_factory.add_awg(driver.SHORT_NAME, driver)

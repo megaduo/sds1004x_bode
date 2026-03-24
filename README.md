@@ -24,6 +24,10 @@ Right now the program supports the following models:
 
   ```<awg_name>``` must be ```ad9910```,  ```<port>``` must be a serial port. See below.
 
+* **Agilent/Keysight 33500B/33600A** This is a series of single or dual channel AWGs, up to 120MHz. If you have a single channel model or a model that has less than 120 MHz, you might want to adapt the settings in the `ag35500b.py` file. This is not required, as it is only for bounds checking. You should have set the scope's bode plot configuration to be compatible with the instrument's capabilities.
+
+  ```<awg_name>``` must be ```ag33500b```,  ```<port>``` must be a Visa compatible connection string, be it ethernet or GPIB. See below.
+
 * **BK Precision BK4075** One channel 25MHz AWG. It connects to the PC via USB. It uses a serial driver, but you might also be able to get this AWG working via a visa driver.
 
   ```<awg_name>``` must be ```bk4075```,  ```<port>``` must be a serial port. You must also provide ```baud_rate``` if you use another speed than 19200. See below.
@@ -219,6 +223,7 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 ### 2026-03-24
 
 * By default disabling the port changing that was required for older scope firmware. Use `-old` to re-enable it.
+* Added support for Agilent/Keysight 35500B/33600A series
 
 ### 2026-03-16
 
@@ -310,6 +315,8 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 * **gtroc71** (and Deepseek) - driver for Siglent SDG1000 series.
 
 * **giuliano-sabbatini** - driver for HP8116A
+
+* **igorus512** - driver for Agilent/Keysight 35500B/33600A series
 
 ## Links
 
