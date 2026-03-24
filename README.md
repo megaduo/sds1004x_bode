@@ -222,7 +222,7 @@ This is possible, but you should set a large timeout on your ```Instrument``` or
 
 ### 2026-03-24
 
-* By default disabling the port changing that was required for older scope firmware. Use `-old` to re-enable it.
+* By default disabling the port changing that was required for older scope firmware. It was causing problems with slower PCs and is not needed if you have the latest scope firmware (which is recommended). Use `-old` to re-enable it.
 * Added support for Agilent/Keysight 35500B/33600A series
 
 ### 2026-03-16
