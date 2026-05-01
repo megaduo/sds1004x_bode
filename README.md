@@ -150,6 +150,7 @@ Address                                     Identification
 TCPIP::192.168.15.102::INSTR                Siglent Technologies,SDS824X HD,SDS08B0C898501,3.8.12.1.1.6.5
 TCPIP::192.168.15.104::INSTR                Rigol Technologies,DG992,DG9A224983246,00.02.06.00.01
 TCPIP::192.168.15.106::INSTR                Ethernet2GPIB Gateway v2.3 (AR488 v0.53.39)
+TCPIP::192.168.15.111::INSTR                Riden,RD6030,00005073,1.47
 USB0::6833::1603::DG9A224983246::0::INSTR   Rigol Technologies,DG992,DG9A224983246,00.02.06.00.01
 ```
 
