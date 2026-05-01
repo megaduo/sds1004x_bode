@@ -1,3 +1,4 @@
 pyserial
 PyVISA
 PyVISA-py
+pyusb

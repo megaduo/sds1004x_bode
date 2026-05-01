@@ -5,6 +5,7 @@ Created on May 5, 2018
 '''
 
 import argparse
+import pyvisa
 from awg_server import AwgServer
 from awg_factory import awg_factory
 
@@ -12,10 +13,48 @@ DEFAULT_AWG = "dummy"
 DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUD_RATE = 19200
 
+def show_visa_instruments():
+    print("Scanning for VISA resources...")
+    rm = pyvisa.ResourceManager()
+    resources = rm.list_resources()
+    resources = sorted(resources)
+    resources = [r for r in resources if not r.startswith("ASRL/dev/cu.")]  # skip known bad devices that very likely not SCPI compatible
+    if len(resources) == 0:
+        print("No VISA resources found.")
+        return
+    # get longest address length for better formatting
+    max_len = max([len(m) for m in resources])
+    max_len += 2  # add some padding
+    if max_len < 20:
+        max_len = 20
+    max_name = 60
+    print("VISA Resources found: ")
+    print(f"{'Address':<{max_len}} Identification")
+    print(f"{'-'*max_len} {'-'*max_name}")
+    
+    for m in resources:            
+        inst = None
+        try:
+            inst = rm.open_resource(m, timeout=1000)
+            r = inst.query("*IDN?").strip()
+            print(f"{m:<{max_len}} {r}")
+            inst.close()
+        except:
+            if (inst is not None):
+                inst.close()
+                print(f"{m:<{max_len}} unknown instrument at this address")
+            else:
+                print(f"{m:<{max_len}} no instrument at this address")
+
 
 def main():
+    
+    detect_str = "visadetect"
+    awg_names = awg_factory.get_names()
+    awg_names = awg_names + [detect_str]
+    
     parser = argparse.ArgumentParser(description="Siglent SDS 800X-HD/1000X-E to non-Siglent AWG bode plot bridge.")
-    parser.add_argument("awg", type=str.lower, nargs='?', default=DEFAULT_AWG, choices=awg_factory.get_names(), help=f"The AWG to use. (default: {DEFAULT_AWG})")
+    parser.add_argument("awg", type=str.lower, nargs='?', default=DEFAULT_AWG, choices=awg_names, help=f"The AWG to use. (default: {DEFAULT_AWG}). Use '{detect_str}' to automatically detect all connected VISA instruments.")
     parser.add_argument("port", type=str, nargs='?', default=DEFAULT_PORT, help=f"The port to use. Either a serial port, or a Visa compatible connection string. (default: {DEFAULT_PORT})")
     parser.add_argument("baudrate", type=int, nargs='?', default=DEFAULT_BAUD_RATE, help=f"When using serial, baud rate to use. (default: {DEFAULT_BAUD_RATE})")
     parser.add_argument('-v', default=0, help="Verbosity level. Specify one or more 'v' for more detail in the logs.", action="count", dest="verbosity")
@@ -45,6 +84,10 @@ def main():
         log_VXI = True
     if args.verbosity > 2:
         log_mapping = True
+        
+    if awg_name == detect_str:
+        show_visa_instruments()
+        return
 
     # Initialize AWG
     print("Initializing AWG...")

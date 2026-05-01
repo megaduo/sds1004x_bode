@@ -94,10 +94,13 @@ You will need the following pip packages:
 * ```pyserial```
 * ```PyVISA```
 * ```PyVISA-py```
+* ```pyusb```
 
 If you have an old python version, you may also need to upgrade the ```typing_extensions``` version (as required by PyVISA-py).
 
 You should not need to install any other VISA drivers.
+
+If you have USB connected AWG, and use MacOS, you might also need to install the [```libusb```](https://libusb.info/) library (`brew install libusb`).
 
 Under Linux, Python ```sockets``` requires elevated privileges, therefore the program has to be run with ```su``` or ```sudo```, or better, allow python access with a command like ```sudo setcap 'CAP_NET_BIND_SERVICE+ep' /bin/python3.10``` (to be adapted to your situation). On MacOS and Windows you likely will not need all this.
 
@@ -120,17 +123,35 @@ python3 bode.py <awg_name> [<port>] [<baud_rate>] [-h] [-v[v[v]]] [-1]
 
 where
 
-* ```<awg_name>``` is the name of the AWG connected to your PC: ```ad9910```, ```bk4075```, ```dg800```, ```dg800p```,  ```fy```, ```fy6900```, ```fy6600```, ```hp8116a```, ```psg9080```, ```jds6600```, ```sdg1050```, ```utg900e```, ```utg1000x``` or ```dummy```.
+* ```<awg_name>``` is the name of the AWG connected to your PC: ```ad9910```, ```bk4075```, ```dg800```, ```dg800p```,  ```fy```, ```fy6900```, ```fy6600```, ```hp8116a```, ```psg9080```, ```jds6600```, ```sdg1050```, ```utg900e```, ```utg1000x``` or ```dummy``` or ```visadetect```.
   
   If you do not specify ```<awg_name>```, the program will use the ```dummy``` configuration: this can be used to test communication with the oscilloscope. The program will then emulate a Siglent AWG and the oscilloscope will generate a Bode plot but no commands will be sent to any AWG.
+
+  If you use ```visadetect```, the program will check all available VISA instruments and try to detect the AWG by querying their identification strings. This can be useful if you don't know which VISA connection string to use. After detection, the program will exit, and you can then start it again with the detected VISA connection string.
 
 * ```<port>``` is the port to which your AWG is connected. The type depends on your AWG, see the explanations above.
 
   For serial port AWGs, it will be something like ```/dev/ttyUSB0``` or ```/dev/ttyACM0```.
 
-  If you use one of the SCPI compatible devices like the ```dg800```, ```dg800p```, ```sdg1050```, ```utg900e```, or ```utg1000x```, you must specify a Visa compatible connection string, like ```TCPIP::192.168.001.204::INSTR``` or ```USB0::9893::6453::DG1234567890A::0::INSTR```. The ```hp8116a``` driver will also accept an instrument address (1 to 30), in which case it will look for the instrument under ```GPIB0::{port}::INSTR```.
-
   If you use the ```dummy``` generator, you don't have to specify the port.
+
+  If you use one of the SCPI compatible devices like the ```dg800```, ```dg800p```, ```sdg1050```, ```utg900e```, or ```utg1000x```, you must specify a Visa compatible connection string, like ```TCPIP::192.168.001.204::INSTR``` or ```USB0::9893::6453::DG1234567890A::0::INSTR```.
+  
+  The ```hp8116a``` driver will also accept a GPIB instrument address (1 to 30), in which case it will connect to the instrument using ```GPIB0::{port}::INSTR```.
+  
+  If you need a Visa string but do not know it, you can use the ```visadetect``` option for ```<awg_name>``` to detect it, like this:
+
+```text
+> python3 sds1004x_bode visadetect
+Scanning for VISA resources...
+VISA Resources found: 
+Address                                     Identification
+------------------------------------------- ------------------------------------------------------------
+TCPIP::192.168.15.102::INSTR                Siglent Technologies,SDS824X HD,SDS08B0C898501,3.8.12.1.1.6.5
+TCPIP::192.168.15.104::INSTR                Rigol Technologies,DG992,DG9A224983246,00.02.06.00.01
+TCPIP::192.168.15.106::INSTR                Ethernet2GPIB Gateway v2.3 (AR488 v0.53.39)
+USB0::6833::1603::DG9A224983246::0::INSTR   Rigol Technologies,DG992,DG9A224983246,00.02.06.00.01
+```
 
 * ```<baud_rate>``` The serial baud rate as defined in the AWG settings. ```bk4075``` uses a default speed of 19200. All others run on 115200 baud or on Visa, and this parameter will be ignored for them.
 
@@ -219,6 +240,10 @@ For driver testing, you can use [```awg_tests.py```](/sds1004x_bode/tests/awg_te
 This is possible, but you should set a large timeout on your ```Instrument``` or when using ```open_resource()``` when using serial AWGs. See the example in [```testSCPI.py```](/sds1004x_bode/tests/testSCPI.py)
 
 ## Changelog
+
+### 2026-05-01
+
+* added autodetect of VISA instruments with ```visadetect``` option. This is useful if you don't know the VISA connection string to use for your AWG.
 
 ### 2026-03-24
 
